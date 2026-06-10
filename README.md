@@ -263,20 +263,6 @@ This helps users understand why a headline was flagged.
 
 ---
 
-## Future Improvements
-
-Potential upgrades include:
-
-* DistilBERT Fine-Tuning
-* Multilingual Support (Hindi, Bengali, etc.)
-* XGBoost-based prediction
-* Explainable AI dashboards
-* Fake News Detection Integration
-* Online Learning and Continuous Model Updates
-* News Source Credibility Scoring
-
----
-
 ## Project Structure
 
 backend/
