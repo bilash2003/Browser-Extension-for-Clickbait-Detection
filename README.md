@@ -8,18 +8,31 @@ The extension combines Natural Language Processing (NLP), Machine Learning, and 
 
 ---
 
+# Outcomes 
+
+## Hover-Based Detection
+
+<p align="center">
+  <img src="photos/pic1.png" width="45%">
+  <img src="photos/pic2.png" width="45%">
+</p>
+
+## Afetr-Click Analysis 
+
+<p align="center">
+  <img src="photos/pic3.png" width="500">
+</p>
+
 ## Problem Statement
 
 Clickbait headlines are designed to attract attention and encourage users to click on content by exploiting curiosity, exaggeration, or emotional triggers.
 
 Examples:
-
 * "You Won't Believe What Happened Next!"
 * "This Simple Trick Changed His Life Forever!"
 * "Doctors Hate This One Secret!"
 
 Such headlines often fail to accurately represent the actual content of the article.
-
 This project aims to detect such patterns automatically and provide users with a clickbait risk score.
 
 ---
@@ -31,7 +44,6 @@ This project aims to detect such patterns automatically and provide users with a
 Analyzes a news headline before opening the article.
 
 Provides:
-
 * Clickbait score (%)
 * Risk category
 * Explanation of detected clickbait indicators
@@ -39,14 +51,12 @@ Provides:
 ### After-Click Analysis
 
 Analyzes both:
-
 * Headline
 * Article title
 * Meta description
 * Article content
 
 Provides:
-
 * Clickbait Risk After Reading
 * Headline-content consistency estimation
 * Additional explanation
@@ -56,7 +66,6 @@ Provides:
 The extension works directly inside Google Chrome.
 
 Features include:
-
 * Automatic headline extraction
 * Hover-based analysis tooltip
 * Color-coded risk visualization
@@ -69,22 +78,18 @@ Features include:
 ### Phase 1: Classical Machine Learning
 
 Initial implementation used:
-
 * TF-IDF Vectorization
 * Logistic Regression Classifier
 
 Pipeline:
-
 Headline → TF-IDF → Logistic Regression → Prediction
 
 Advantages:
-
 * Fast
 * Lightweight
 * Easy to deploy
 
 Limitations:
-
 * Relies heavily on keywords
 * Limited semantic understanding
 
@@ -97,13 +102,11 @@ The project was later upgraded to use:
 ### MiniLM (all-MiniLM-L6-v2)
 
 Pipeline:
-
 Headline → MiniLM Embeddings → Machine Learning Model → Prediction
 
 MiniLM generates dense semantic embeddings that capture contextual meaning rather than simple keyword frequency.
 
 Benefits:
-
 * Better semantic understanding
 * Improved generalization
 * Better handling of unseen headlines
@@ -148,7 +151,6 @@ Important fields:
 ### instances.jsonl
 
 Contains:
-
 * postText
 * targetTitle
 * targetDescription
@@ -157,18 +159,14 @@ Contains:
 ### truth.jsonl
 
 Contains:
-
 * truthMean
 * truthClass
 
 Example:
-
 truthClass = clickbait
-
 truthMean = 1.0
 
 The MiniLM version was trained using:
-
 * Headline text (postText)
 * truthMean as the target value
 
@@ -178,19 +176,15 @@ The MiniLM version was trained using:
 
 ### Before-Click Detection
 
-Input:
-
-Headline
+Input: Headline
 
 Process:
-
 1. Headline embedding generation using MiniLM
 2. Embedding passed to trained ML model
 3. Clickbait score prediction
 4. Explanation generation
 
 Output:
-
 * Clickbait Score
 * Category
 * Reasons
@@ -200,20 +194,17 @@ Output:
 ### After-Click Detection
 
 Input:
-
 * Headline
 * Page Title
 * Meta Description
 * Article Content
 
 Process:
-
 1. Content extraction from webpage
 2. Feature generation
 3. Consistency prediction
 
 Output:
-
 * Clickbait Risk After Reading
 * Consistency Score
 * Explanation
@@ -241,7 +232,6 @@ Strong clickbait indicators detected.
 ## Explainable AI Features
 
 The system provides simple explanations including:
-
 * Curiosity Gap
 * Information Withholding
 * Emotional Trigger
@@ -266,14 +256,12 @@ This helps users understand why a headline was flagged.
 ## Project Structure
 
 backend/
-
 * app.py
 * explanation.py
 * clickbait_model_minilm.pkl
 * after_click_model.pkl
 
 extension/
-
 * manifest.json
 * popup.html
 * popup.js
@@ -281,7 +269,6 @@ extension/
 * style.css
 
 models/
-
 * MiniLM Models
 * TF-IDF + Logistic Regression Models
 
