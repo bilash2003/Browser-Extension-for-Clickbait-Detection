@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Clickbait Detector</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <h2>Clickbait Detector</h2>
+
+    <p
+        style="
+        font-size:12px;
+        color:gray;
+        margin-top:-10px;
+        margin-bottom:12px;
+        "
+    >
+        Powered by MiniLM - Real-Time Clickbait Analysis
+    </p>
+
+    <textarea
+        id="headline"
+        placeholder="Enter headline..."
+    ></textarea>
+
+    <button id="analyze">
+        Analyze Headline
+    </button>
+
+    <button id="analyzeArticle">
+        Analyze Article
+    </button>
+
+    <div id="result"></div>
+
+    <hr>
+
+    <div
+        style="
+        font-size:11px;
+        color:#777;
+        text-align:center;
+        "
+    >
+        Before-Click + After-Click Detection
+    </div>
+
+    <script src="popup.js"></script>
+
+</body>
+
+</html>
