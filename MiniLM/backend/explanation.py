@@ -7,7 +7,11 @@ CLICKBAIT_PATTERNS = {
         "what happened next",
         "the reason why",
         "this is what",
-        "guess what"
+        "guess what",
+        "what happens next will",
+        "you'll never guess",
+        "here's why",     
+        "wait until you see"
     ],
 
     "Emotional Trigger": [
@@ -15,14 +19,20 @@ CLICKBAIT_PATTERNS = {
         "amazing",
         "incredible",
         "unbelievable",
-        "heartbreaking"
+        "heartbreaking",
+        "jaw dropping",
+        "mind blowing",
+        "stunning"
     ],
 
     "Information Withholding": [
         "this one thing",
         "this secret",
         "one simple trick",
-        "what happened next"
+        "what happened next",
+        "the truth about",
+        "what nobody tells you",
+        "hidden truth"
     ],
 
     "Exaggeration": [
@@ -30,7 +40,10 @@ CLICKBAIT_PATTERNS = {
         "change your life",
         "best ever",
         "never before",
-        "ultimate"
+        "ultimate",
+        "will blow your mind",
+        "changed everything",
+        "you need to know"
     ],
 
     "Fear Appeal": [
@@ -38,7 +51,9 @@ CLICKBAIT_PATTERNS = {
         "warning",
         "could kill",
         "avoid",
-        "risk"
+        "risk",
+        "before it's too late",
+        "deadly"
     ]
 }
 
@@ -55,12 +70,16 @@ def generate_explanation(text):
 
         for phrase in phrases:
 
-            if phrase in text:
+            # \b word-boundary matching avoids false positives like
+            # "risk" matching inside "brisket"
+            pattern = r"\b" + re.escape(phrase) + r"\b"
+
+            if re.search(pattern, text):
                 detected.append(tactic)
                 break
 
     if detect_listicle(text):
-        detected.append("Listicle Pattern")
+        detected.append("Listicle Pattern")   
 
     return list(set(detected))
 
