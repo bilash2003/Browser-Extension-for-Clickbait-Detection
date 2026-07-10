@@ -185,9 +185,50 @@ document
                         "meta[name='description']"
                     )?.content || "";
 
-                const article_text =
-                    document.body.innerText
-                    .slice(0, 3000);
+               function getArticleBody(wordLimit = 300) {
+               let fullText = "";
+
+               
+               const container = document.querySelector('article, .article-body, .story-content, .post-content, .entry-content');
+
+               if (container) {
+              
+               const paragraphs = Array.from(container.querySelectorAll('p'));
+               fullText = paragraphs
+               .map(p => p.innerText.trim())
+               .filter(text => text.length > 0)
+               .join('\n\n');
+               }
+               else {
+              
+               const allParagraphs = Array.from(document.querySelectorAll('p'));
+               fullText = allParagraphs
+               .map(p => p.innerText.trim())
+               .filter(text => text.length > 50)
+               .join('\n\n');
+            }
+
+            
+               if (!fullText) return "";
+              
+               const words = fullText.split(/\s+/);
+             
+               if (words.length <= wordLimit) {
+               return fullText;
+               }
+            
+              const truncatedText = words.slice(0, wordLimit).join(' ');
+            
+              const lastFullStopIndex = truncatedText.lastIndexOf('.');
+            
+              if (lastFullStopIndex !== -1) {
+                return truncatedText.substring(0, lastFullStopIndex + 1);
+              }
+
+              return truncatedText + "...";
+    }
+
+               const article_text = getArticleBody(200);
 
                 return {
                     headline,
