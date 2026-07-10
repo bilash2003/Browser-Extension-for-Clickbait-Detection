@@ -1,3 +1,5 @@
+importScripts("config.js");
+
 chrome.runtime.onMessage.addListener(
     async (request, sender, sendResponse) => {
 
@@ -7,9 +9,9 @@ chrome.runtime.onMessage.addListener(
 
                 const response =
                     await fetch(
-                        "http://127.0.0.1:8000/predict_style",
+                        `${CONFIG.API_BASE_URL}/predict_style`,
                         {
-                            method: "POST",
+                            method: "POST",   
 
                             headers: {
                                 "Content-Type":
@@ -36,7 +38,7 @@ chrome.runtime.onMessage.addListener(
                 });
             }
 
-            return true;
+            return true; 
         }
     }
 );
