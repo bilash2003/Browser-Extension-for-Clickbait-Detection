@@ -9,7 +9,7 @@ async function getCurrentPageHeadline() {
         target: { tabId: tab.id },
 
         func: () => {
-
+    
             const selectors = [
                 "h1",
                 ".headline",
@@ -36,6 +36,36 @@ async function getCurrentPageHeadline() {
     return results[0].result;
 }
 
+// Renders the model's per-class probability breakdown
+// (e.g. Low / Moderate / High Clickbait) as a small bar list.
+// `compact` drops the "Confidence" heading, useful when nesting it
+// inside an already-labeled section like the after-click analysis.
+function renderConfidenceBreakdown(confidence, compact = false) {
+
+    if (!confidence) {
+        return "";
+    }
+
+    const rows = Object.entries(confidence)
+        .map(([label, pct]) => `
+            <div style="
+                display:flex;
+                justify-content:space-between;
+                margin-bottom:4px;
+            ">
+                <span>${label}</span>
+                <span><b>${pct}%</b></span>
+            </div>
+        `)
+        .join("");
+
+    const heading = compact
+        ? ""
+        : `<p style="margin-bottom:4px;"><b>Confidence:</b></p>`;
+
+    return `${heading}${rows}`;
+}
+
 document.addEventListener(
     "DOMContentLoaded",
     async () => {
@@ -57,7 +87,7 @@ document
         document.getElementById("headline").value;
 
     const response = await fetch(
-        "http://127.0.0.1:8000/predict_style",
+        `${CONFIG.API_BASE_URL}/predict_style`,
         {
             method: "POST",
 
@@ -74,10 +104,10 @@ document
 
     const data = await response.json();
 
-    let color = "#4CAF50";
+    let color = "#3ddc84";
 
     if (data.score > 70)
-        color = "#ff4d4d";
+        color = "#ff5c72";
 
     else if (data.score > 40)
         color = "#ffb84d";
@@ -120,6 +150,8 @@ document
             : "No clickbait indicators detected"
     }
 </p>
+
+${renderConfidenceBreakdown(data.confidence)}
 `;
 });
 
@@ -127,7 +159,7 @@ document
 .getElementById("analyzeArticle")
 .addEventListener("click", async () => {
 
-    let [tab] = await chrome.tabs.query({
+    let [tab] = await chrome.tabs.query({ 
         active: true,
         currentWindow: true
     });
@@ -155,7 +187,7 @@ document
 
                 const article_text =
                     document.body.innerText
-                    .slice(0, 5000);
+                    .slice(0, 3000);
 
                 return {
                     headline,
@@ -171,7 +203,7 @@ document
 
     const response =
         await fetch(
-            "http://127.0.0.1:8000/predict_consistency",
+            `${CONFIG.API_BASE_URL}/predict_consistency`,
             {
                 method: "POST",
 
@@ -189,10 +221,10 @@ document
     const data =
         await response.json();
 
-    let afterColor = "#4CAF50";
+    let afterColor = "#3ddc84";
 
     if (data.consistency_score > 70)
-        afterColor = "#ff4d4d";
+        afterColor = "#ff5c72";
 
     else if (
         data.consistency_score > 40
@@ -220,6 +252,17 @@ document
 ">
     ${data.category}
 </p>
+
+<div style="
+    background:#242639;
+    border:1px solid #2f3247;
+    border-radius:8px;
+    padding:8px;
+    margin:8px 0;
+    font-size:12px;
+">
+    ${renderConfidenceBreakdown(data.confidence, true)}
+</div>
 
 <p>
     <b>Reasons:</b>
