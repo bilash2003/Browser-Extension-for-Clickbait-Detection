@@ -8,6 +8,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 from transformers import AutoConfig, AutoModelForSequenceClassification, PreTrainedTokenizerFast
+from sentence_transformers import SentenceTransformer
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -131,6 +132,27 @@ before_tokenizer, before_model = load_bundle("before_click_model.pkl")
 
 print("Loading after-click model...")
 after_tokenizer, after_model = load_bundle("after_click_model.pkl")
+
+print("Loading similarity model...")
+# Separate, lightweight model used ONLY to measure how closely the
+# headline's meaning matches the article's content (the "Headline <->
+# content match" signal). This is independent of the fine-tuned
+# before/after classifiers above.
+similarity_model = SentenceTransformer("all-MiniLM-L6-v2")
+
+
+def cosine_similarity(vec_a, vec_b):
+    vec_a = vec_a.flatten()
+    vec_b = vec_b.flatten()
+
+    dot_product = np.dot(vec_a, vec_b)
+    norm_a = np.linalg.norm(vec_a)
+    norm_b = np.linalg.norm(vec_b)
+
+    if norm_a == 0 or norm_b == 0:
+        return 0.0
+
+    return float(dot_product / (norm_a * norm_b))
 
 
 def score_text(tokenizer, model, text: str):
@@ -261,6 +283,24 @@ def predict_consistency(data: ConsistencyInput):
             after_tokenizer, after_model, combined_text
         )
 
+        # "Text pattern signal" — the fine-tuned model's own clickbait
+        # score, based on the combined headline + article text it was
+        # trained on.
+        # text_pattern_score = round(score * 100, 2)
+
+        # "Headline <-> content match" — an independent semantic check:
+        # does the headline's meaning actually match the article's
+        # content (title + description + body), regardless of wording?
+        article_content = (
+            data.title + " " + data.description + " " + data.article_text
+        ).strip()
+
+        headline_embedding = similarity_model.encode([data.headline])
+        article_embedding = similarity_model.encode([article_content])
+
+        similarity = cosine_similarity(headline_embedding, article_embedding)
+        semantic_similarity = round(similarity * 100, 2)
+
     except Exception as e:
         print("Prediction error:", e)
         raise HTTPException(
@@ -274,9 +314,14 @@ def predict_consistency(data: ConsistencyInput):
 
     reasons = generate_explanation(data.headline)
 
+    if similarity < 0.35:
+        reasons.append("Low semantic match between headline and article content")
+
     return {
         "headline": data.headline,
         "consistency_score": percentage,
+        # "classifier_score": text_pattern_score,
+        "semantic_similarity": semantic_similarity,
         "model_prediction": predicted_label,
         "confidence": prob_breakdown,
         "processing_time_ms": processing_time,
