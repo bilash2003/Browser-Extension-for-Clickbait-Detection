@@ -28,6 +28,12 @@ async function getCurrentPageHeadline() {
                     return element.innerText;
                 }
             }
+            // document.title often has a site-name suffix appended,
+            // e.g. "Headline Text — CNN" or "Headline Text | BBC News".
+            // Strip anything after a trailing separator so we send just
+            // the headline itself, not the site branding.
+            let title = document.title || "";
+            title = title.split(/\s+[-–—|]\s+/)[0];
 
             return document.title;
         }
@@ -49,21 +55,37 @@ function renderConfidenceBreakdown(confidence, compact = false) {
     const rows = Object.entries(confidence)
         .map(([label, pct]) => `
             <div style="
-                display:flex;
+                 display:flex;
                 justify-content:space-between;
                 margin-bottom:4px;
+                font-size:11.5px;
             ">
-                <span>${label}</span>
-                <span><b>${pct}%</b></span>
+                <span style="color:var(--text-muted);">${label}</span>
+                <span style="font-weight:600;">${pct}%</span>
             </div>
         `)
         .join("");
 
     const heading = compact
         ? ""
-        : `<p style="margin-bottom:4px;"><b>Confidence:</b></p>`;
+        : `<p style="margin-bottom:4px; font-size:11.5px;"><b>Confidence:</b></p>`;
 
     return `${heading}${rows}`;
+}
+//
+// Renders the main score as a large, color-highlighted number, so it
+// stands out clearly above the smaller confidence breakdown.
+function renderScoreBlock(label, value, color) {
+    return `
+        <div style="margin:10px 0;">
+            <div style="font-size:12px; color:var(--text-muted); margin-bottom:2px;">
+                ${label}
+            </div>
+            <div style="font-size:30px; font-weight:800; color:${color}; line-height:1.1;">
+                ${value}%
+            </div>
+        </div>
+    `;
 }
 
 document.addEventListener(
@@ -83,8 +105,11 @@ document
 .getElementById("analyze")
 .addEventListener("click", async () => {
 
+    // trim..........
     const headline =
-        document.getElementById("headline").value;
+        document.getElementById("headline").value
+            .replace(/\s+/g, " ")
+            .trim();
 
     const response = await fetch(
         `${CONFIG.API_BASE_URL}/predict_style`,
@@ -132,10 +157,7 @@ document
     </div>
 </div>
 
-<p>
-    <b>Score:</b>
-    ${data.score}%
-</p>
+${renderScoreBlock("Score", data.score, color)}
 
 <p>
     <b>Processed In:</b>
@@ -172,13 +194,16 @@ document
             },
 
             func: () => {
+                function clean(text) {
+                    return text.replace(/\s+/g, " ").trim();
+                }
 
                 const headline =
                     document.querySelector("h1")
-                    ?.innerText || "";
+                    ?.innerText ? clean(document.querySelector("h1").innerText) : "";
 
                 const title =
-                    document.title || "";
+                    document.title ? clean(document.title) : "";
 
                 const description =
                     document.querySelector(
@@ -187,6 +212,22 @@ document
 
                function getArticleBody(wordLimit = 300) {
                let fullText = "";
+               
+                // ..............................
+            //     const headline =
+            //         document.querySelector("h1")
+            //         ?.innerText || "";
+
+            //     const title =
+            //         document.title || "";
+
+            //     const description =
+            //         document.querySelector(
+            //             "meta[name='description']"
+            //         )?.content || "";
+
+            //    function getArticleBody(wordLimit = 300) {
+            //    let fullText = "";
 
                
                const container = document.querySelector('article, .article-body, .story-content, .post-content, .entry-content');
@@ -282,17 +323,28 @@ document
     After-Click Analysis
 </h3>
 
-<p>
-    <b>Clickbait Risk After Reading:</b>
-    ${data.consistency_score}%
-</p>
-
 <p style="
     color:${afterColor};
     font-weight:bold;
 ">
     ${data.category}
 </p>
+
+${renderScoreBlock("Clickbait Scale", data.consistency_score, afterColor)}
+
+<div style="
+    background:#242639;
+    border:1px solid #2f3247;
+    border-radius:8px;
+    padding:8px;
+    margin:8px 0;
+    font-size:12px;
+"> 
+    <div style="display:flex; justify-content:space-between;">
+        <span>Headline &harr; content match</span>
+        <span><b>${data.semantic_similarity}%</b></span>
+    </div>
+</div>
 
 <div style="
     background:#242639;
