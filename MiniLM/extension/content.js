@@ -225,7 +225,9 @@ document.addEventListener(
             return;
 
         const text =
-            headlineElement.innerText;
+            headlineElement.innerText
+                .replace(/\s+/g, " ")
+                .trim();
 
         if (!text)
             return;
