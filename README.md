@@ -99,7 +99,7 @@ Limitations:
 
 The project was later upgraded to use:
 
-### MiniLM (all-MiniLM-L6-v2)
+### MiniLM (Microsoft/MiniLM-L12-H384-uncased)
 
 Pipeline:
 Headline → MiniLM Embeddings → Machine Learning Model → Prediction
