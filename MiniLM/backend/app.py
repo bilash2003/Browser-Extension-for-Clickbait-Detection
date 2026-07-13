@@ -15,6 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from explanation import generate_explanation, get_category
+from model_explanation import get_key_terms
 
 app = FastAPI(
     title="Clickbait Detection API"
@@ -162,6 +163,7 @@ def score_text(tokenizer, model, text: str):
       weighted_score  -> single 0-1 clickbait-ness value
       predicted_label -> friendly name of the argmax class
       prob_breakdown  -> {friendly class name: percentage} for all classes
+      predicted_id    -> raw integer class id (needed for Captum attribution)
     """
     inputs = tokenizer(
         text,
@@ -192,7 +194,31 @@ def score_text(tokenizer, model, text: str):
         for idx, label in id2label.items()
     }
 
-    return weighted_score, predicted_label, prob_breakdown
+    return weighted_score, predicted_label, prob_breakdown, predicted_id
+
+
+def build_reasons(tokenizer, model, text, predicted_id):
+    """
+    Rule-based reasons first (fast, cheap, human-curated tactic names).
+    If the keyword list finds nothing — which happens whenever the model
+    picked up on a pattern that isn't in our fixed phrase list — fall back
+    to Captum, which asks the model directly which words drove ITS
+    prediction, so we still give a meaningful explanation instead of
+    "No clickbait indicators detected" on a headline the model actually
+    flagged with high confidence.
+    """
+    reasons = generate_explanation(text)
+
+    if reasons:
+        return reasons
+
+    key_terms = get_key_terms(tokenizer, model, text, predicted_id, top_k=5)
+
+    if key_terms:
+        quoted = ", ".join(f"'{w}'" for w in key_terms)
+        return [f"Model highlighted these words: {quoted}"]
+
+    return []
 
 
 class HeadlineInput(BaseModel):
@@ -220,7 +246,7 @@ def predict_style(data: HeadlineInput):
     start_time = time.time()
 
     try:
-        score, predicted_label, prob_breakdown = score_text(
+        score, predicted_label, prob_breakdown, predicted_id = score_text(
             before_tokenizer, before_model, data.headline
         )
 
@@ -235,6 +261,10 @@ def predict_style(data: HeadlineInput):
     percentage = round(score * 100, 2)
     processing_time = round((time.time() - start_time) * 1000, 2)
 
+    reasons = build_reasons(
+        before_tokenizer, before_model, data.headline, predicted_id
+    )
+
     return {
         "headline": data.headline,
         "score": percentage,
@@ -242,7 +272,7 @@ def predict_style(data: HeadlineInput):
         "category": get_category(score),
         "model_prediction": predicted_label,
         "confidence": prob_breakdown,
-        "reasons": generate_explanation(data.headline)
+        "reasons": reasons
     }
 
 
@@ -279,14 +309,9 @@ def predict_consistency(data: ConsistencyInput):
     )
 
     try:
-        score, predicted_label, prob_breakdown = score_text(
+        score, predicted_label, prob_breakdown, predicted_id = score_text(
             after_tokenizer, after_model, combined_text
         )
-
-        # "Text pattern signal" — the fine-tuned model's own clickbait
-        # score, based on the combined headline + article text it was
-        # trained on.
-        # text_pattern_score = round(score * 100, 2)
 
         # "Headline <-> content match" — an independent semantic check:
         # does the headline's meaning actually match the article's
@@ -312,7 +337,9 @@ def predict_consistency(data: ConsistencyInput):
     percentage = round(score * 100, 2)
     processing_time = round((time.time() - start_time) * 1000, 2)
 
-    reasons = generate_explanation(data.headline)
+    reasons = build_reasons(
+        after_tokenizer, after_model, data.headline, predicted_id
+    )
 
     if similarity < 0.35:
         reasons.append("Low semantic match between headline and article content")
@@ -320,7 +347,6 @@ def predict_consistency(data: ConsistencyInput):
     return {
         "headline": data.headline,
         "consistency_score": percentage,
-        # "classifier_score": text_pattern_score,
         "semantic_similarity": semantic_similarity,
         "model_prediction": predicted_label,
         "confidence": prob_breakdown,
