@@ -54,11 +54,33 @@ CLICKBAIT_PATTERNS = {
         "risk",
         "before it's too late",
         "deadly"
+    ],
+    "Advice / Warning Framing": [
+        "shouldn't do",
+        "mistakes to avoid",
+        "never do",
+        "things to avoid",
+        "things you should",
+        "you're doing it wrong"
     ]
 }
+NUMBER_WORDS = [
+    "one", "two", "three", "four", "five", "six", "seven", "eight",
+    "nine", "ten", "eleven", "twelve", "dozen", "several", "few"
+]
 
 def detect_listicle(text):
-    return bool(re.search(r"\b\d+\b", text))
+    # catches "5 Ways to...", "10 Things..."
+    if re.search(r"\b\d+\b", text):
+        return True
+
+    # catches spelled-out versions: "Seven things you shouldn't do..."
+    text_lower = text.lower()
+    for word in NUMBER_WORDS:
+        if re.search(r"\b" + word + r"\b", text_lower):
+            return True
+
+    return False
 
 def generate_explanation(text):
 
