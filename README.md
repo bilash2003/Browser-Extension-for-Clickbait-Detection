@@ -10,7 +10,7 @@ The extension combines Natural Language Processing (NLP), fine-tuned transformer
 
 # Structure 
 <p align="center">
-  <img src="photos/pic3.png" width="500">
+  <img src="photos/pic.png" width="500">
 </p>
 
 # Outcomes
@@ -20,14 +20,14 @@ The extension combines Natural Language Processing (NLP), fine-tuned transformer
 <p align="center">
   <img src="photos/pic1.png" width="45%">
   <img src="photos/pic2.png" width="45%">
-  <img src="photos/pic2.png" width="45%">
+  <img src="photos/pic3.png" width="45%">
 </p>
 
 ## After-Click Analysis
 
 <p align="center">
-  <img src="photos/pic1.png" width="45%">
-  <img src="photos/pic2.png" width="45%">
+  <img src="photos/pic4.png" width="45%">
+  <img src="photos/pic5.png" width="45%">
 </p>
 
 ## Problem Statement
