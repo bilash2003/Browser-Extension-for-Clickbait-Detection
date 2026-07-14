@@ -135,7 +135,7 @@ The system no longer returns a bare score. A two-tier explanation pipeline was a
 
 * PyTorch
 * Hugging Face Transformers (`AutoConfig`, `AutoModelForSequenceClassification`, `PreTrainedTokenizerFast`)
-* Sentence-Transformers (`all-MiniLM-L6-v2`) — semantic similarity only
+* Sentence-Transformers (`all-MiniLM-L12-H384 uncased`) — semantic similarity only
 * Captum (`LayerIntegratedGradients`) — model-attribution explanations
 
 ### Data Processing
@@ -312,6 +312,5 @@ extension/
 * Multimodal analysis of accompanying images/thumbnails (e.g. CLIP)
 * Structured multi-field encoding (headline, title/description, and intro encoded separately)
 * NLI-style consistency framing (entailment / neutral / contradiction)
-* A genuine consistency-labelled dataset (supported / exaggerated / contradicted / unrelated)
 * Model-based explainability via SHAP as an alternative to Integrated Gradients
-* Probability calibration for more reliable confidence scores
+ 
