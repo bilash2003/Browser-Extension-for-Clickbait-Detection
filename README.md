@@ -20,7 +20,7 @@ The extension combines Natural Language Processing (NLP), fine-tuned transformer
 <p align="center">
   <img src="photos/pic1.png" width="45%">
   <img src="photos/pic2.png" width="45%">
-  <img src="photos/pic3.png" width="45%">
+  <img src="photos/pic3.png" width="90%">
 </p>
 
 ## After-Click Analysis
@@ -108,7 +108,7 @@ Benefits over Phase 1:
 
 ### Phase 3: Independent Semantic Similarity Signal
 
-A separate, untrained `all-MiniLM-L6-v2` Sentence-Transformer was added specifically for the after-click path, to measure how closely the headline's *meaning* matches the article's content — independent of, and complementary to, the after-click classifier. This catches cases where wording overlaps but meaning diverges, or vice versa.
+A separate, untrained `all-MiniLM-L12-H384 uncased` Sentence-Transformer was added specifically for the after-click path, to measure how closely the headline's *meaning* matches the article's content — independent of, and complementary to, the after-click classifier. This catches cases where wording overlaps but meaning diverges, or vice versa.
 
 ### Phase 4: Explainability Layer
 
